@@ -18,19 +18,15 @@ require_root() {
 
 load_env() {
   local env_file="${INSTALLER_ROOT}/.env"
-  [[ -f "$env_file" ]] || die "Missing ${env_file}. Copy .env.example → .env and fill values."
-
-  # shellcheck disable=SC1090
-  set -a
-  # shellcheck disable=SC1091
-  source "$env_file"
-  set +a
-
-  INSTANCE_IP="${INSTANCE_IP:?INSTANCE_IP required in .env}"
-  EXTERNAL_PORT="${EXTERNAL_PORT:?EXTERNAL_PORT required in .env}"
-  COLDKEY_NAME="${COLDKEY_NAME:?COLDKEY_NAME required in .env}"
-  HOTKEY_NAME="${HOTKEY_NAME:?HOTKEY_NAME required in .env}"
-  HUGGING_FACE_TOKEN="${HUGGING_FACE_TOKEN:?HUGGING_FACE_TOKEN required in .env}"
+  if [[ -f "$env_file" ]]; then
+    # shellcheck disable=SC1090
+    set -a
+    # shellcheck disable=SC1091
+    source "$env_file"
+    set +a
+  else
+    warn "No ${env_file}; required values must be supplied as install.sh arguments"
+  fi
 
   VERATHOS_DIR="${VERATHOS_DIR:-/root/verathos}"
   VERATHOS_REPO="${VERATHOS_REPO:-https://github.com/verathos-ai/verathos}"
@@ -43,7 +39,7 @@ load_env() {
   GPU_ID="${GPU_ID:-0}"
   PM2_NAME="${PM2_NAME:-verathos-gpu0}"
   GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.85}"
-  ENDPOINT="${ENDPOINT:-https://${INSTANCE_IP}:${EXTERNAL_PORT}}"
+  ENDPOINT="${ENDPOINT:-}"
 }
 
 ensure_hf_token() {

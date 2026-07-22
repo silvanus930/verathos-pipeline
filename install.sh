@@ -7,7 +7,8 @@
 #   cd /root/verathos_installer
 #   cp .env.example .env   # edit values
 #   bash install.sh --instance-ip 91.224.44.223 --external-port 40039 \
-#     --coldkey-name dxpian --hotkey-name default
+#     --coldkey-name dxpian --hotkey-name default \
+#     --hugging-face-token hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 #
 # Safe default: if pm2 miner is already running, it will NOT be restarted.
 #
@@ -16,6 +17,7 @@
 #   --external-port VALUE  Override EXTERNAL_PORT from .env
 #   --coldkey-name VALUE   Override COLDKEY_NAME from .env
 #   --hotkey-name VALUE    Override HOTKEY_NAME from .env
+#   --hugging-face-token VALUE  Override HUGGING_FACE_TOKEN from .env
 #   --skip-deps            Skip apt/npm/pm2/nginx package install
 #   --skip-clone           Skip git clone (repo must already exist)
 #   --skip-setup-miner     Skip scripts/setup_miner.sh
@@ -58,9 +60,10 @@ CLI_INSTANCE_IP=""
 CLI_EXTERNAL_PORT=""
 CLI_COLDKEY_NAME=""
 CLI_HOTKEY_NAME=""
+CLI_HUGGING_FACE_TOKEN=""
 
 usage() {
-  sed -n '2,30p' "$0" | sed 's/^# \?//'
+  sed -n '2,32p' "$0" | sed 's/^# \?//'
 }
 
 require_option_value() {
@@ -87,6 +90,10 @@ while [[ $# -gt 0 ]]; do
       require_option_value "$1" "${2:-}"; CLI_HOTKEY_NAME="$2"; shift 2 ;;
     --hotkey-name=*)
       CLI_HOTKEY_NAME="${1#*=}"; require_option_value "--hotkey-name" "${CLI_HOTKEY_NAME}"; shift ;;
+    --hugging-face-token)
+      require_option_value "$1" "${2:-}"; CLI_HUGGING_FACE_TOKEN="$2"; shift 2 ;;
+    --hugging-face-token=*)
+      CLI_HUGGING_FACE_TOKEN="${1#*=}"; require_option_value "--hugging-face-token" "${CLI_HUGGING_FACE_TOKEN}"; shift ;;
     --skip-deps) SKIP_DEPS=1; shift ;;
     --skip-clone) SKIP_CLONE=1; shift ;;
     --skip-setup-miner) SKIP_SETUP_MINER=1; shift ;;
@@ -249,9 +256,18 @@ main() {
   [[ -z "${CLI_EXTERNAL_PORT}" ]] || EXTERNAL_PORT="${CLI_EXTERNAL_PORT}"
   [[ -z "${CLI_COLDKEY_NAME}" ]] || COLDKEY_NAME="${CLI_COLDKEY_NAME}"
   [[ -z "${CLI_HOTKEY_NAME}" ]] || HOTKEY_NAME="${CLI_HOTKEY_NAME}"
+  [[ -z "${CLI_HUGGING_FACE_TOKEN}" ]] || HUGGING_FACE_TOKEN="${CLI_HUGGING_FACE_TOKEN}"
+
+  INSTANCE_IP="${INSTANCE_IP:?INSTANCE_IP is required in .env or --instance-ip}"
+  EXTERNAL_PORT="${EXTERNAL_PORT:?EXTERNAL_PORT is required in .env or --external-port}"
+  COLDKEY_NAME="${COLDKEY_NAME:?COLDKEY_NAME is required in .env or --coldkey-name}"
+  HOTKEY_NAME="${HOTKEY_NAME:?HOTKEY_NAME is required in .env or --hotkey-name}"
+  HUGGING_FACE_TOKEN="${HUGGING_FACE_TOKEN:?HUGGING_FACE_TOKEN is required in .env or --hugging-face-token}"
+
   if [[ -n "${CLI_INSTANCE_IP}" || -n "${CLI_EXTERNAL_PORT}" ]]; then
     ENDPOINT="https://${INSTANCE_IP}:${EXTERNAL_PORT}"
   fi
+  ENDPOINT="${ENDPOINT:-https://${INSTANCE_IP}:${EXTERNAL_PORT}}"
 
   log "Verathos installer"
   log "  endpoint = ${ENDPOINT}"

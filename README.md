@@ -28,6 +28,19 @@ cp .env.example .env
 bash install.sh
 ```
 
+Or pass all required settings directly (command-line values override `.env`):
+
+```bash
+bash install.sh \
+  --instance-ip 91.224.44.223 \
+  --external-port 40039 \
+  --coldkey-name dxpian \
+  --hotkey-name default \
+  --hugging-face-token hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+Passing a token on the command line may save it in shell history. For better secret handling, keep `HUGGING_FACE_TOKEN` in the ignored `.env` file and pass only the other four arguments.
+
 Follow logs:
 
 ```bash
@@ -73,6 +86,11 @@ bash install.sh --help
 
 | Flag | Meaning |
 |------|---------|
+| `--instance-ip VALUE` | Override `INSTANCE_IP` from `.env` |
+| `--external-port VALUE` | Override `EXTERNAL_PORT` from `.env` |
+| `--coldkey-name VALUE` | Override `COLDKEY_NAME` from `.env` |
+| `--hotkey-name VALUE` | Override `HOTKEY_NAME` from `.env` |
+| `--hugging-face-token VALUE` | Override `HUGGING_FACE_TOKEN` from `.env` |
 | `--skip-deps` | Skip apt/npm/pm2 package install |
 | `--skip-clone` | Do not `git clone` (repo must already exist) |
 | `--skip-setup-miner` | Skip `scripts/setup_miner.sh` |
